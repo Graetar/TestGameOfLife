@@ -3,6 +3,13 @@
 namespace GameOfLife;
 
 
+/**
+ * Class AlgorithmController
+ * Inspired by Daniel Pepin's conway-game-of-life-php
+ * @see https://github.com/donutdan4114/conway-game-of-life-php
+ *
+ * @package GameOfLife
+ */
 class AlgorithmController
 {
 
@@ -29,10 +36,10 @@ class AlgorithmController
      */
     public function __construct(?int $width, ?int $height, ?int $numberOfSpecies, ?int $numberOfIterations)
     {
-        $this->width = $width;
-        $this->height = $height;
-        $this->numberOfSpecies = $numberOfSpecies;
-        $this->numberOfIterations = $numberOfIterations;
+        $this->width = $width ?: $this->width;
+        $this->height = $height ?: $this->height;
+        $this->numberOfSpecies = $numberOfSpecies ?: $this->numberOfSpecies;
+        $this->numberOfIterations = $numberOfIterations ?: $this->numberOfIterations;
     }
 
     /**
@@ -130,5 +137,17 @@ class AlgorithmController
         }
 
         return $aliveCounts;
+    }
+
+    /**
+     * @param int $randDensity
+     */
+    public function initCells(int $randDensity = 1): void
+    {
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                $this->cells[$x][$y] = rand(0, $randDensity) === 0 ? 0 : rand(1, $this->numberOfSpecies);
+            }
+        }
     }
 }
