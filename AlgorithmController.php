@@ -25,6 +25,9 @@ class AlgorithmController
     /** @var int */
     private $numberOfIterations = 4000000;
 
+    /** @var int */
+    private $initRandDensity = 1;
+
     /** @var array */
     public $cells = [];
 
@@ -33,45 +36,53 @@ class AlgorithmController
      * @param int|null $height
      * @param int|null $numberOfSpecies
      * @param int|null $numberOfIterations
+     * @param int|null $initRandDensity
      */
-    public function __construct(?int $width, ?int $height, ?int $numberOfSpecies, ?int $numberOfIterations)
-    {
+    public function __construct(
+        ?int $width,
+        ?int $height,
+        ?int $numberOfSpecies,
+        ?int $numberOfIterations,
+        ?int $initRandDensity
+    ) {
         $this->width = $width ?: $this->width;
         $this->height = $height ?: $this->height;
         $this->numberOfSpecies = $numberOfSpecies ?: $this->numberOfSpecies;
         $this->numberOfIterations = $numberOfIterations ?: $this->numberOfIterations;
+        $this->initRandDensity = $initRandDensity ?: $this->initRandDensity;
     }
 
-    /**
-     * @return int
-     */
-    public function getWidth(): int
+    public function render(): void
     {
-        return $this->width;
+        $this->loop();
+
+        $output = new Output(
+            $this->width * $this->height,
+            $this->numberOfSpecies,
+            $this->numberOfIterations,
+            $this->cells
+        );
+
+        header('Content-Type: application/xml; charset=utf-8');
+        echo $xml = $output->getXml();
     }
 
-    /**
-     * @return int
-     */
-    public function getHeight(): int
+    public function loop(): void
     {
-        return $this->height;
+        $this->initCells();
+
+        for ($i = 0; $i < $this->numberOfIterations; $i++) {
+            $this->newGeneration();
+        }
     }
 
-    /**
-     * @return int
-     */
-    public function getNumberOfSpecies(): int
+    private function initCells(): void
     {
-        return $this->numberOfSpecies;
-    }
-
-    /**
-     * @return int
-     */
-    public function getNumberOfIterations(): int
-    {
-        return $this->numberOfIterations;
+        for ($x = 0; $x < $this->width; $x++) {
+            for ($y = 0; $y < $this->height; $y++) {
+                $this->cells[$x][$y] = rand(0, $this->initRandDensity) === 0 ? 0 : rand(1, $this->numberOfSpecies);
+            }
+        }
     }
 
     private function newGeneration(): void
@@ -82,13 +93,13 @@ class AlgorithmController
             for ($y = 0; $y < $this->height; $y++) {
                 $neighbourCounts = $this->getAliveNeighbourCounts($x, $y); // cell activity is determined by the neighbours
                 $species = $this->cells[$x][$y];
-                $hasOwnNeighbours = array_key_exists($species, $neighbourCounts);
+                $hasOwnSpeciesNeighbours = array_key_exists($species, $neighbourCounts);
 
-                if ($species > 0 && (!$hasOwnNeighbours || $neighbourCounts[$species] < 2 || $neighbourCounts[$species] > 3)) {
+                if ($species > 0 && (!$hasOwnSpeciesNeighbours || $neighbourCounts[$species] < 2 || $neighbourCounts[$species] > 3)) {
                     $killQueue[] = [$x, $y];
                 }
 
-                if ($species === 0 && $hasOwnNeighbours && $neighbourCounts[$species] === 3) {
+                if ($species === 0 && $hasOwnSpeciesNeighbours && $neighbourCounts[$species] === 3) {
                     $bornQueue[] = [$x, $y, $species]; // saving information about species
                 }
             }
@@ -137,17 +148,5 @@ class AlgorithmController
         }
 
         return $aliveCounts;
-    }
-
-    /**
-     * @param int $randDensity
-     */
-    public function initCells(int $randDensity = 1): void
-    {
-        for ($x = 0; $x < $this->width; $x++) {
-            for ($y = 0; $y < $this->height; $y++) {
-                $this->cells[$x][$y] = rand(0, $randDensity) === 0 ? 0 : rand(1, $this->numberOfSpecies);
-            }
-        }
     }
 }
