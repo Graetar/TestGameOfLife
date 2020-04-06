@@ -142,7 +142,8 @@ class AlgorithmController
                 }
 
                 if ($this->cells[$x1][$y1] !== 0) {
-                    $aliveCounts[$this->cells[$x1][$y1]] += 1;
+                    if(!array_key_exists($this->cells[$x1][$y1], $aliveCounts)) $aliveCounts[$this->cells[$x1][$y1]] = 1;
+                    else $aliveCounts[$this->cells[$x1][$y1]] += 1;
                 }
             }
         }
