@@ -123,9 +123,6 @@ class AlgorithmController
     private function getAliveNeighbourCounts($x, $y): array
     {
         $aliveCounts = [];
-        for ($i = 1; $i <= $this->numberOfSpecies; $i++) {
-            $aliveCounts[$i] = 0;
-        }
 
         for ($x1 = $x - 1; $x1 <= $x + 1; $x1++) {
             if ($x1 < 0 || $x1 >= $this->width) {
